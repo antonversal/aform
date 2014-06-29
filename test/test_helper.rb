@@ -1,4 +1,5 @@
 require 'aform'
-require 'minitest/spec'
 require 'minitest/autorun'
+require 'minitest/spec'
 require 'minitest/pride'
+require 'pry'
