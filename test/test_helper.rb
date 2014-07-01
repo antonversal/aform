@@ -5,6 +5,8 @@ require 'minitest/pride'
 require 'minitest/emoji'
 require 'pry'
 
+I18n.enforce_available_locales = false
+
 module MiniTest
   class Spec
     class << self

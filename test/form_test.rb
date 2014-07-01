@@ -23,16 +23,28 @@ describe Aform::Form do
         validates_presence_of :name
         validates :count, presence: true, inclusion: [1..100]
         validate :custom_validation
+        validate do
+          errors.add(:base, "Must be foo to be a bar")
+        end
       end.new
     end
 
-    it "saves validation" do
-      validations = [
-        {method: :validates_presence_of, options: [:name]},
-        {method: :validates, options: [:count, {presence: true, inclusion: [1..100]}]},
-        {method: :validate, options: [:custom_validation]}
-      ]
-      subject.validations.must_equal(validations)
+    it "saves validations" do
+      subject.validations.size.must_be_same_as 4
+    end
+
+    it "saves `validates_presence_of` validation" do
+      subject.validations.must_include({method: :validates_presence_of, options: [:name]})
+    end
+
+    it "saves `validates` validation" do
+      subject.validations.must_include({method: :validates,
+                                        options: [:count, {presence: true, inclusion: [1..100]}]})
+    end
+
+    it "saves `validate` validation" do
+      subject.validations.last[:method].must_be_same_as(:validate)
+      subject.validations.last[:block].wont_be_nil
     end
   end
 end
