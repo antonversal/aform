@@ -17,9 +17,16 @@ describe Aform::Model do
       end
     end
 
-    context "when block is given" do
-      let(:fields){ [:name, :full_name] }
-      let(:validations){ [{method: :validates_presence_of, options: [:name]}] }
-    end
+    #context "when block is given" do
+    #  let(:fields){ [:name, :full_name] }
+    #  let(:validations) do
+    #    [{method: :validate, block: ->{errors.add(:base, "must be foo")}}]
+    #  end
+    #
+    #  it "is not valid" do
+    #    binding.pry
+    #    subject.new.wont_be :valid?
+    #  end
+    #end
   end
 end
