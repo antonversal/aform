@@ -3,6 +3,17 @@ module Aform
     class_attribute :params
     class_attribute :validations
 
+    attr_accessor :model, :attributes
+
+    def initialize(attributes, model_klass = Aform::Model)
+      self.model = model_klass.new_klass(self.params, self.validations).new(attributes)
+      self.attributes = attributes
+    end
+
+    def valid?
+      self.model.valid?
+    end
+
     class << self
       def param(*args)
         self.params ||= []

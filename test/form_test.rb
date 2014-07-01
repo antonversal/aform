@@ -2,12 +2,22 @@ require 'test_helper'
 
 describe Aform::Form do
 
+  let(:mock_model_klass) do
+    Class.new do
+      def self.new_klass(*args)
+        self
+      end
+      def initialize(*args)
+      end
+    end
+  end
+
   describe ".param" do
     subject do
       Class.new(Aform::Form) do
         param :name, :count
         param :size
-      end.new
+      end.new({}, mock_model_klass)
     end
 
     it "stores params" do
@@ -16,7 +26,6 @@ describe Aform::Form do
   end
 
   describe "validation remembering" do
-
     subject do
       Class.new(Aform::Form) do
         param :name, :count
@@ -26,7 +35,7 @@ describe Aform::Form do
         validate do
           errors.add(:base, "Must be foo to be a bar")
         end
-      end.new
+      end.new({}, mock_model_klass)
     end
 
     it "saves validations" do
@@ -45,6 +54,24 @@ describe Aform::Form do
     it "saves `validate` validation" do
       subject.validations.last[:method].must_be_same_as(:validate)
       subject.validations.last[:block].wont_be_nil
+    end
+  end
+
+  describe "#valid?" do
+    subject do
+      Class.new(Aform::Form) do
+        param :name, :count
+        validates_presence_of :name
+        validates :count, presence: true, inclusion: {in: 1..100}
+      end
+    end
+
+    it "returns true" do
+      subject.new({name: "Name", count: 10}).must_be :valid?
+    end
+
+    it "returns false" do
+      subject.new({}).wont_be :valid?
     end
   end
 end
