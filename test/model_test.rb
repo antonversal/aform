@@ -4,17 +4,16 @@ describe Aform::Model do
   subject do
     fields = [:name, :full_name]
     validations = [{method: :validates_presence_of, options: [:name]}]
-    Aform::Model.new(fields, validations)
+    Aform::Model.new_klass(fields, validations)
   end
 
-  describe "validations" do
+  context "validations" do
     it "is not valid" do
-      subject.wont_be :valid?
+      subject.new.wont_be :valid?
     end
 
     it "is valid" do
-      subject.assign_attributes(name: "the name")
-      subject.must_be :valid?
+      subject.new(name: "the name").must_be :valid?
     end
   end
 end

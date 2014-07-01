@@ -2,29 +2,24 @@ require 'active_model'
 class Aform::Model
   include ActiveModel::Model
 
-  def initialize(params, validations)
-    @params = params
-    @validations = validations
-    @attributes = {}
-    define_params_methods
-    define_validations
-  end
-
-  def assign_attributes(attributes = {})
+  def initialize(attributes = {})
     @attributes = attributes
   end
 
-  private
+  def self.new_klass(params, validations)
+    Class.new(self) do
 
-  def define_params_methods
-    @params.each do |p| 
-      self.class.send(:define_method, p) { @attributes[p] }
-    end
-  end
+      def self.model_name
+        ActiveModel::Name.new(self, nil, "Aform::Model")
+      end
 
-  def define_validations
-    @validations.each do |v|
-      self.class.send(v[:method], v[:options])
+      validations.each do |v|
+        send(v[:method], v[:options])
+      end
+
+      params.each do |p|
+        self.send(:define_method, p) { @attributes[p] }
+      end
     end
   end
 end
