@@ -14,7 +14,7 @@ class Aform::Model
       end
 
       validations.each do |v|
-        send(v[:method], v[:options])
+        send(v[:method], *v[:options])
       end
 
       params.each do |p|
