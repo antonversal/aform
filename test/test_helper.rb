@@ -3,6 +3,7 @@ require 'minitest/autorun'
 require 'minitest/spec'
 require 'minitest/pride'
 require 'minitest/emoji'
+require 'mocha/mini_test'
 require 'pry'
 
 I18n.enforce_available_locales = false
