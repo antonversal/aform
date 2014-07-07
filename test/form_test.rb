@@ -4,12 +4,22 @@ describe Aform::Form do
 
   let(:mock_model_klass) do
     Class.new do
-      def self.new_klass(*args)
-        self
-      end
-      def initialize(*args)
+      def initialize(*args); end
+    end
+  end
+  let(:mock_builder_klass) do
+    Class.new do
+      def initialize(*args); end
+      def build_model_klass(*args)
+        Class.new do
+          def initialize(*args); end
+        end
       end
     end
+  end
+
+  describe "" do
+
   end
 
   describe ".param" do
@@ -17,7 +27,7 @@ describe Aform::Form do
       Class.new(Aform::Form) do
         param :name, :count
         param :size
-      end.new({}, mock_model_klass)
+      end.new({}, mock_model_klass, mock_builder_klass)
     end
 
     it "stores params" do
@@ -35,7 +45,7 @@ describe Aform::Form do
         validate do
           errors.add(:base, "Must be foo to be a bar")
         end
-      end.new({}, mock_model_klass)
+      end.new({}, mock_model_klass, mock_builder_klass)
     end
 
     it "saves validations" do
@@ -72,6 +82,12 @@ describe Aform::Form do
 
     it "returns false" do
       subject.new({}).wont_be :valid?
+    end
+  end
+
+  describe "#save" do
+    context "when new object" do
+
     end
   end
 end

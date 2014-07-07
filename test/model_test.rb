@@ -1,7 +1,7 @@
 require 'test_helper'
 
 describe Aform::Model do
-  subject { Aform::Model.new_klass(fields, validations) }
+  subject { Aform::Builder.new(Aform::Model).build_model_klass(fields, validations) }
 
   context "validations" do
     context "by type" do

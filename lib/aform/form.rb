@@ -5,8 +5,9 @@ module Aform
 
     attr_accessor :model, :attributes
 
-    def initialize(attributes, model_klass = Aform::Model)
-      self.model = model_klass.new_klass(self.params, self.validations).new(attributes)
+    def initialize(attributes, model_klass = Aform::Model, model_builder = Aform::Builder)
+      creator = model_builder.new(model_klass)
+      self.model = creator.build_model_klass(self.params, self.validations).new(attributes)
       self.attributes = attributes
     end
 
