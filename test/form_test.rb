@@ -85,7 +85,9 @@ describe Aform::Form do
   end
 
   describe "#save" do
-
+    it "calls model.save" do
+      skip("investigate better mock")
+    end
   end
 end
 

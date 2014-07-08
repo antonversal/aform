@@ -32,17 +32,16 @@ describe Aform::Model do
       end
     end
 
-    #context "when block is given" do
-    #  let(:fields){ [:name, :full_name] }
-    #  let(:validations) do
-    #    [{method: :validate, block: ->{errors.add(:base, "must be foo")}}]
-    #  end
-    #
-    #  it "is not valid" do
-    #    binding.pry
-    #    subject.new.wont_be :valid?
-    #  end
-    #end
+    context "when block is given" do
+      let(:fields){ [:name, :full_name] }
+      let(:validations) do
+        [{method: :validate, block: ->{errors.add(:base, "must be foo")}}]
+      end
+
+      it "is not valid" do
+        skip("not implemented")
+      end
+    end
   end
 
   context "#save" do

@@ -15,6 +15,10 @@ module Aform
       self.model.valid?
     end
 
+    def save
+      self.model.save
+    end
+
     class << self
       def param(*args)
         self.params ||= []
