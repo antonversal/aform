@@ -4,23 +4,13 @@ describe Aform::Form do
 
   let(:ar_model) { mock("ar_model") }
 
-  let(:mock_model_klass) do
-    mock("Aform::Model") do
-      stubs(:new).returns(true)
-    end
-  end
-
-  #strange mocking....
-  let(:mock_builder_klass) do
-    mock_model_klass = mock("Aform::Model") do
-      stubs(:new).returns(true)
-    end
-    mock_builder_instance = mock("Aform::BuilderInstance") do
-      stubs(:build_model_klass).returns(mock_model_klass)
-    end
-    mock("Aform::Builder") do
-      stubs(:new).returns(mock_builder_instance)
-    end
+  before do
+    @mock_model_klass = mock("Aform::Model")
+    @mock_model_klass.stubs(:new).returns(true)
+    @mock_builder_instance = mock("Aform::BuilderInstance")
+    @mock_builder_instance.stubs(:build_model_klass).returns(@mock_model_klass)
+    @mock_builder_klass = mock("Aform::Builder")
+    @mock_builder_klass.stubs(:new).returns(@mock_builder_instance)
   end
 
   describe ".param" do
@@ -28,7 +18,7 @@ describe Aform::Form do
       Class.new(Aform::Form) do
         param :name, :count
         param :size
-      end.new(ar_model, {}, mock_model_klass, mock_builder_klass)
+      end.new(ar_model, {}, @mock_model_klass, @mock_builder_klass)
     end
 
     it "stores params" do
@@ -46,7 +36,7 @@ describe Aform::Form do
         validate do
           errors.add(:base, "Must be foo to be a bar")
         end
-      end.new(ar_model, {}, mock_model_klass, mock_builder_klass)
+      end.new(ar_model, {}, @mock_model_klass, @mock_builder_klass)
     end
 
     it "saves validations" do
