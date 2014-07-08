@@ -2,6 +2,7 @@ module Aform
   class Form
     class_attribute :params
     class_attribute :validations
+    class_attribute :nested_forms
 
     attr_accessor :model, :attributes
 
@@ -43,9 +44,11 @@ module Aform
 
     def self.define_nested_form(args, &block)
       name = args.shift
+      self.nested_forms ||= []
       class_attribute name
       klass = Class.new(Aform::Form, &block)
       self.send("#{name}=", klass)
+      self.nested_forms << klass
     end
   end
 end

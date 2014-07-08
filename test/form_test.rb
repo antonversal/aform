@@ -109,6 +109,10 @@ describe Aform::Form do
       it "saves validations" do
         subject.comments.validations.must_equal([{method: :validates_presence_of, options: [:message, :author]}])
       end
+
+      it "defines `nested_forms`" do
+        subject.nested_forms.must_equal([subject.comments])
+      end
     end
   end
 end
