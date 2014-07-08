@@ -89,5 +89,27 @@ describe Aform::Form do
       skip("investigate better mock")
     end
   end
+
+  describe "nested objects" do
+    describe "has_many" do
+      subject do
+        Class.new(Aform::Form) do
+          param :name, :count
+          has_many :comments do
+            param :author, :message
+            validates_presence_of :message, :author
+          end
+        end
+      end
+
+      it "saves params" do
+        subject.comments.params.must_equal([:author, :message])
+      end
+
+      it "saves validations" do
+        subject.comments.validations.must_equal([{method: :validates_presence_of, options: [:message, :author]}])
+      end
+    end
+  end
 end
 

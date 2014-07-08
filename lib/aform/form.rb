@@ -31,10 +31,21 @@ module Aform
           options.merge!(block: block) if block_given?
           self.validations ||= []
           self.validations << options
+        elsif meth == :has_many
+          define_nested_form(args, &block)
         else
           super
         end
       end
+    end
+
+    protected
+
+    def self.define_nested_form(args, &block)
+      name = args.shift
+      class_attribute name
+      klass = Class.new(Aform::Form, &block)
+      self.send("#{name}=", klass)
     end
   end
 end
