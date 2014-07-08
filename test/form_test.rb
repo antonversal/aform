@@ -5,11 +5,12 @@ describe Aform::Form do
   let(:ar_model) { mock("ar_model") }
 
   before do
-    @mock_model_klass = mock("Aform::Model")
-    @mock_model_klass.stubs(:new).returns(true)
-    @mock_builder_instance = mock("Aform::BuilderInstance")
+    @mock_model_instance = mock("model_instance")
+    @mock_model_klass = mock("model_class")
+    @mock_model_klass.stubs(:new).returns(@mock_model_instance)
+    @mock_builder_instance = mock("builder_instance")
     @mock_builder_instance.stubs(:build_model_klass).returns(@mock_model_klass)
-    @mock_builder_klass = mock("Aform::Builder")
+    @mock_builder_klass = mock("builder_class")
     @mock_builder_klass.stubs(:new).returns(@mock_builder_instance)
   end
 
@@ -64,15 +65,12 @@ describe Aform::Form do
         param :name, :count
         validates_presence_of :name
         validates :count, presence: true, inclusion: {in: 1..100}
-      end
+      end.new(ar_model, {}, @mock_model_klass, @mock_builder_klass)
     end
 
-    it "returns true" do
-      subject.new(ar_model, {name: "Name", count: 10}).must_be :valid?
-    end
-
-    it "returns false" do
-      subject.new(ar_model, {}).wont_be :valid?
+    it "calls valid? on model" do
+      @mock_model_instance.expects(:valid?)
+      subject.valid?
     end
   end
 
@@ -103,7 +101,31 @@ describe Aform::Form do
       end
 
       it "defines `nested_forms`" do
-        subject.nested_forms.must_equal([subject.comments])
+        subject.nested_form_klasses.must_equal({comments: subject.comments})
+      end
+
+      describe "initialization" do
+        it "initializes nested froms" do
+          model = mock("ar_model")
+          relation = mock("relation")
+          relation.expects(:build).times(2)
+          model.stubs(comments: relation)
+          subject.new(model, {name: "name", count: 1,
+                              comments: [{author: "Joe", message: "Message 1"},
+                                         {author: "Smith", message: "Message 2"}]})
+        end
+      end
+
+      describe "#valid?" do
+        it "calls valid? on nested forms" do
+          Aform::Model.any_instance.expects(:valid?).returns(true).times(3)
+          model = mock("ar_model")
+          model.stubs(comments: stub(build: mock("ar_comment_model")))
+          form = subject.new(model, {name: "name", count: 1,
+                                     comments: [{author: "Joe", message: "Message 1"},
+                                                {author: "Smith", message: "Message 2"}]})
+          form.valid?
+        end
       end
     end
   end

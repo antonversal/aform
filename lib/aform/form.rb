@@ -2,18 +2,23 @@ module Aform
   class Form
     class_attribute :params
     class_attribute :validations
-    class_attribute :nested_forms
+    class_attribute :nested_form_klasses
 
-    attr_accessor :model, :attributes
+    attr_accessor :model, :attributes, :nested_forms
 
     def initialize(ar_model, attributes, model_klass = Aform::Model, model_builder = Aform::Builder)
       creator = model_builder.new(model_klass)
       self.model = creator.build_model_klass(self.params, self.validations).new(ar_model, attributes)
       self.attributes = attributes
+      initialize_nested(ar_model, model_klass, model_builder)
     end
 
     def valid?
-      self.model.valid?
+      if self.nested_forms
+        self.model.valid? && self.nested_forms.all?(&:valid?)
+      else
+        self.model.valid?
+      end
     end
 
     def save
@@ -44,11 +49,30 @@ module Aform
 
     def self.define_nested_form(args, &block)
       name = args.shift
-      self.nested_forms ||= []
+      self.nested_form_klasses ||= {}
       class_attribute name
       klass = Class.new(Aform::Form, &block)
       self.send("#{name}=", klass)
-      self.nested_forms << klass
+      self.nested_form_klasses.merge! name => klass
+    end
+
+    private
+
+    def initialize_nested(ar_model, model_klass, model_builder)
+      if nested_form_klasses
+        nested_form_klasses.each do |k,v|
+          if attributes.has_key? k
+            attributes[k].each do |attrs|
+              self.nested_forms ||= []
+              self.nested_forms << v.new(nested_ar_model(ar_model, k), attrs, model_klass, model_builder)
+            end
+          end
+        end
+      end
+    end
+
+    def nested_ar_model(ar_model, association)
+      ar_model.public_send(association).build
     end
   end
 end

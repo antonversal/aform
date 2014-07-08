@@ -12,11 +12,11 @@ class Aform::Builder
 
       validations.each do |v|
         send(v[:method], *v[:options])
-      end
+      end if validations
 
       params.each do |p|
         self.send(:define_method, p) { @attributes[p] }
-      end
+      end if params
     end
   end
 end
