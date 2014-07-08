@@ -5,19 +5,21 @@ describe Aform::Form do
   let(:ar_model) { mock("ar_model") }
 
   let(:mock_model_klass) do
-    Class.new do
-      def initialize(*args); end
+    mock("Aform::Model") do
+      stubs(:new).returns(true)
     end
   end
 
+  #strange mocking....
   let(:mock_builder_klass) do
-    Class.new do
-      def initialize(*args); end
-      def build_model_klass(*args)
-        Class.new do
-          def initialize(*args); end
-        end
-      end
+    mock_model_klass = mock("Aform::Model") do
+      stubs(:new).returns(true)
+    end
+    mock_builder_instance = mock("Aform::BuilderInstance") do
+      stubs(:build_model_klass).returns(mock_model_klass)
+    end
+    mock("Aform::Builder") do
+      stubs(:new).returns(mock_builder_instance)
     end
   end
 
