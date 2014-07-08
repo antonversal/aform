@@ -2,11 +2,14 @@ require 'test_helper'
 
 describe Aform::Form do
 
+  let(:ar_model) { mock("ar_model") }
+
   let(:mock_model_klass) do
     Class.new do
       def initialize(*args); end
     end
   end
+
   let(:mock_builder_klass) do
     Class.new do
       def initialize(*args); end
@@ -18,16 +21,12 @@ describe Aform::Form do
     end
   end
 
-  describe "" do
-
-  end
-
   describe ".param" do
     subject do
       Class.new(Aform::Form) do
         param :name, :count
         param :size
-      end.new({}, mock_model_klass, mock_builder_klass)
+      end.new(ar_model, {}, mock_model_klass, mock_builder_klass)
     end
 
     it "stores params" do
@@ -45,7 +44,7 @@ describe Aform::Form do
         validate do
           errors.add(:base, "Must be foo to be a bar")
         end
-      end.new({}, mock_model_klass, mock_builder_klass)
+      end.new(ar_model, {}, mock_model_klass, mock_builder_klass)
     end
 
     it "saves validations" do
@@ -77,18 +76,16 @@ describe Aform::Form do
     end
 
     it "returns true" do
-      subject.new({name: "Name", count: 10}).must_be :valid?
+      subject.new(ar_model, {name: "Name", count: 10}).must_be :valid?
     end
 
     it "returns false" do
-      subject.new({}).wont_be :valid?
+      subject.new(ar_model, {}).wont_be :valid?
     end
   end
 
   describe "#save" do
-    context "when new object" do
 
-    end
   end
 end
 

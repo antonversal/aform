@@ -6,6 +6,9 @@ class Aform::Builder
 
   def build_model_klass(params, validations)
     Class.new(@model_klass) do
+      class_attribute :params
+
+      self.params = params
 
       validations.each do |v|
         send(v[:method], *v[:options])
