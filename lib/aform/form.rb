@@ -22,7 +22,11 @@ module Aform
     end
 
     def save
-      self.model.save
+      if self.nested_forms
+        self.model.save && self.nested_forms.all?(&:save)
+      else
+        self.model.save
+      end
     end
 
     class << self
