@@ -4,14 +4,14 @@ module Aform
     class_attribute :validations
     class_attribute :nested_form_klasses
 
-    attr_reader :form_model, :attributes, :nested_forms
+    attr_reader :form_model, :attributes, :nested_forms, :model
 
-    def initialize(ar_model, attributes, model_klass = Aform::Model,
+    def initialize(model, attributes, model_klass = Aform::Model,
       model_builder = Aform::Builder, errors_klass = Aform::Errors)
       @model_klass, @model_builder, @errors_klass = model_klass, model_builder, errors_klass
-      @ar_model, @attributes = ar_model, attributes
+      @model, @attributes = model, attributes
       creator = @model_builder.new(@model_klass)
-      @form_model = creator.build_model_klass(self.params, self.validations).new(@ar_model, @attributes)
+      @form_model = creator.build_model_klass(self.params, self.validations).new(@model, @attributes)
       initialize_nested
     end
 
@@ -85,7 +85,7 @@ module Aform
             attributes[k].each do |attrs|
               @nested_forms ||= {}
               @nested_forms[k] ||= []
-              model = nested_ar_model(@ar_model, k, attrs)
+              model = nested_ar_model(@model, k, attrs)
               @nested_forms[k] << v.new(model, attrs, @model_klass, @model_builder, @errors_klass)
             end
           end
