@@ -8,9 +8,9 @@ Gem::Specification.new do |spec|
   spec.version       = Aform::VERSION
   spec.authors       = ["Anton Versal"]
   spec.email         = ["ant.ver@gmail.com"]
-  spec.summary       = %q{TODO: Write a short summary. Required.}
-  spec.description   = %q{TODO: Write a longer description. Optional.}
-  spec.homepage      = ""
+  spec.summary       = %q{Filling AR models from complex JSON}
+  spec.description   = %q{Form Object implementation for filling models from JSON with nested arrays}
+  spec.homepage      = "https://github.com/antonversal/aform"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
