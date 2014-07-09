@@ -18,19 +18,27 @@ module Aform
 
     #TODO don't save all models if at leas one is fail
 
+    def invalid?
+      !valid?
+    end
+
     def valid?
       if self.nested_forms
-        self.model.valid? && self.nested_forms.values.flatten.all?(&:valid?)
+        main = self.model.valid?
+        nested = self.nested_forms.values.flatten.map(&:valid?).all? #all? don't invoike method on each element
+        main && nested
       else
         self.model.valid?
       end
     end
 
     def save
-      if self.nested_forms
-        self.model.save && self.nested_forms.values.flatten.all?(&:save)
-      else
-        self.model.save
+      if self.valid?
+        if self.nested_forms
+          self.model.save && self.nested_forms.values.flatten.all?(&:save)
+        else
+          self.model.save
+        end
       end
     end
 

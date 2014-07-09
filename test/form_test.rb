@@ -74,7 +74,6 @@ describe Aform::Form do
     end
   end
 
-  #TODO investigate better mock
   describe "#save" do
     subject do
       Class.new(Aform::Form) do
@@ -85,24 +84,25 @@ describe Aform::Form do
     end
 
     it "calls model.save" do
+      subject.stubs(:valid?).returns(true)
       @mock_model_instance.expects(:save)
       subject.save
     end
   end
 
   describe "#errors" do
-    subject do
-      Class.new(Aform::Form) do
-        param :name, :count
-        validates_presence_of :name
-        validates :count, presence: true, inclusion: {in: 1..100}
-      end.new(ar_model, {}, @mock_model_klass, @mock_builder_klass)
-    end
-
-    it "calls model.errors" do
-      @mock_model_instance.expects(:errors)
-      subject.errors
-    end
+    #subject do
+    #  Class.new(Aform::Form) do
+    #    param :name, :count
+    #    validates_presence_of :name
+    #    validates :count, presence: true, inclusion: {in: 1..100}
+    #  end.new(ar_model, {}, @mock_model_klass, @mock_builder_klass)
+    #end
+    #
+    #it "calls model.errors" do
+    #  @mock_model_instance.expects(:errors)
+    #  subject.errors
+    #end
   end
 
   describe "nested objects" do
@@ -164,17 +164,35 @@ describe Aform::Form do
                                                 {author: "Smith", message: "Message 2"}]})
           form.valid?
         end
-      end
 
-      describe "#save?" do
-        it "calls valid? on nested forms" do
-          Aform::Model.any_instance.expects(:save).returns(true).times(3)
+        it "calls valid? on nested forms when main form is not valid" do
+          Aform::Model.any_instance.expects(:valid?).returns(false).times(3)
           model = mock("ar_model")
           model.stubs(comments: stub(build: mock("ar_comment_model")))
           form = subject.new(model, {name: "name", count: 1,
                                      comments: [{author: "Joe", message: "Message 1"},
                                                 {author: "Smith", message: "Message 2"}]})
-          form.save
+          form.valid?
+        end
+      end
+
+      describe "#save" do
+        before do
+          model = mock("ar_model")
+          model.stubs(comments: stub(build: mock("ar_comment_model")))
+          @form = subject.new(model, {name: "name", count: 1,
+                                     comments: [{author: "Joe", message: "Message 1"},
+                                                {author: "Smith", message: "Message 2"}]})
+        end
+
+        it "calls save on nested forms" do
+          Aform::Model.any_instance.expects(:save).returns(true).times(3)
+          @form.save
+        end
+
+        it "calls valid? on nested forms" do
+          Aform::Model.any_instance.expects(:valid?).returns(false).times(3)
+          @form.save
         end
       end
     end
