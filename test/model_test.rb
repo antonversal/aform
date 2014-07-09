@@ -78,5 +78,15 @@ describe Aform::Model do
         model.save
       end
     end
+
+    context "when keys are strings" do
+      let(:model) { subject.new(ar_model, "name" => "name", "count" => 2, "other_attr" => "other")}
+
+      it "calls `ar_model.assign_attributes`" do
+        ar_model.expects(:assign_attributes).with("name" => "name", "count" => 2).returns(true)
+        ar_model.stubs(:save)
+        model.save
+      end
+    end
   end
 end

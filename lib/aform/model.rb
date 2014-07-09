@@ -4,7 +4,7 @@ class Aform::Model
 
   def initialize(object, attributes = {}, destroy_key = :_destroy)
     @destroy = attributes[destroy_key]
-    @attributes = attributes.select{|k,v| params.include? k }
+    @attributes = attributes.select{|k,v| params.include? k.to_sym }
     @object = object
   end
 
