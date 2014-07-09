@@ -27,4 +27,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "pry-byebug"
   spec.add_development_dependency "minitest-emoji"
   spec.add_development_dependency "mocha"
+  spec.add_development_dependency "activerecord"
+  spec.add_development_dependency "sqlite3"
 end
