@@ -114,6 +114,19 @@ describe Aform::Form do
                               comments: [{author: "Joe", message: "Message 1"},
                                          {author: "Smith", message: "Message 2"}]})
         end
+
+        context "when `id` is present" do
+          it "finds model for nested form" do
+            model = mock("ar_model")
+            relation = mock("relation")
+            relation.stubs(:build)
+            relation.expects(:find).with(21).times(1)
+            model.stubs(comments: relation)
+            subject.new(model, {name: "name", count: 1,
+                                comments: [{author: "Joe", message: "Message 1"},
+                                           {id: 21, author: "Smith", message: "Message 2"}]})
+          end
+        end
       end
 
       describe "#valid?" do

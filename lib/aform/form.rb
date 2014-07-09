@@ -68,15 +68,20 @@ module Aform
           if attributes.has_key? k
             attributes[k].each do |attrs|
               self.nested_forms ||= []
-              self.nested_forms << v.new(nested_ar_model(ar_model, k), attrs, model_klass, model_builder)
+              model = nested_ar_model(ar_model, k, attrs)
+              self.nested_forms << v.new(model, attrs, model_klass, model_builder)
             end
           end
         end
       end
     end
 
-    def nested_ar_model(ar_model, association)
-      ar_model.public_send(association).build
+    def nested_ar_model(ar_model, association, attrs)
+      if attrs.has_key? :id
+        ar_model.public_send(association).find(attrs[:id])
+      else
+        ar_model.public_send(association).build
+      end
     end
   end
 end
