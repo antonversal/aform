@@ -47,9 +47,7 @@ describe "ActiveRecord" do
                {message: "Really?", author: "Vasya"}
              ]
     }
-
     post.reload
-    
     form = PostForm.new(post, attrs)
     form.save.must_equal true
     Post.count.must_equal 1
@@ -60,5 +58,38 @@ describe "ActiveRecord" do
     comments = post.comments
     comments.map(&:message).must_equal(["Great post MAN!", "Really?"])
     comments.map(&:author).must_equal(["Mr. Smith", "Vasya"])
+  end
+
+  it "delete nested records" do
+    post = Post.create(title: "Cool Post", author: "John Doe")
+    comment = post.comments.create(message: "Great post man!", author: "Mr. Smith")
+    post.comments.create(message: "Really?", author: "Vasya")
+    attrs = {title: "Very Cool Post", author: "John Doe",
+             comments: [
+               {id: comment.id, _destroy: true}
+             ]
+    }
+    post.reload
+    form = PostForm.new(post, attrs)
+    form.save.must_equal true
+    Comment.count.must_equal 1
+    post = Post.first
+    comment = post.comments.first
+    comment.message.must_equal("Really?")
+    comment.author.must_equal("Vasya")
+  end
+
+  it "return validation errors" do
+    post = Post.new
+    attrs = {title: "Cool Post",
+             comments: [
+               {message: "Great post man!"},
+               {author: "Vasya"}
+             ]
+    }
+    form = PostForm.new(post, attrs)
+    form.wont_be :valid?
+    form.errors.must_equal({author: ["can't be blank"], comments: [{author: ["can't be blank"]},
+                                                                   {message: ["can't be blank"]}]})
   end
 end

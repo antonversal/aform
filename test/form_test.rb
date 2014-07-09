@@ -74,9 +74,34 @@ describe Aform::Form do
     end
   end
 
+  #TODO investigate better mock
   describe "#save" do
+    subject do
+      Class.new(Aform::Form) do
+        param :name, :count
+        validates_presence_of :name
+        validates :count, presence: true, inclusion: {in: 1..100}
+      end.new(ar_model, {}, @mock_model_klass, @mock_builder_klass)
+    end
+
     it "calls model.save" do
-      skip("investigate better mock")
+      @mock_model_instance.expects(:save)
+      subject.save
+    end
+  end
+
+  describe "#errors" do
+    subject do
+      Class.new(Aform::Form) do
+        param :name, :count
+        validates_presence_of :name
+        validates :count, presence: true, inclusion: {in: 1..100}
+      end.new(ar_model, {}, @mock_model_klass, @mock_builder_klass)
+    end
+
+    it "calls model.errors" do
+      @mock_model_instance.expects(:errors)
+      subject.errors
     end
   end
 

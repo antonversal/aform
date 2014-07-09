@@ -7,12 +7,13 @@ module Aform
     attr_accessor :model, :attributes, :nested_forms
 
     def initialize(ar_model, attributes, model_klass = Aform::Model,
-      model_builder = Aform::Builder)
-
-      creator = model_builder.new(model_klass)
-      self.model = creator.build_model_klass(self.params, self.validations).new(ar_model, attributes)
+      model_builder = Aform::Builder, errors_klass = Aform::Errors)
+      @model_klass, @model_builder, @errors_klass = model_klass, model_builder, errors_klass
+      @ar_model = ar_model
+      creator = @model_builder.new(@model_klass)
+      self.model = creator.build_model_klass(self.params, self.validations).new(@ar_model, attributes)
       self.attributes = attributes
-      initialize_nested(ar_model, model_klass, model_builder)
+      initialize_nested
     end
 
     #TODO don't save all models if at leas one is fail
@@ -34,7 +35,7 @@ module Aform
     end
 
     def errors
-      self.model.errors.messages
+      @errors_klass.new(self).messages
     end
 
     class << self
@@ -70,15 +71,15 @@ module Aform
 
     private
 
-    def initialize_nested(ar_model, model_klass, model_builder)
+    def initialize_nested
       if nested_form_klasses
         nested_form_klasses.each do |k,v|
           if attributes.has_key? k
             attributes[k].each do |attrs|
               self.nested_forms ||= {}
               self.nested_forms[k] ||= []
-              model = nested_ar_model(ar_model, k, attrs)
-              self.nested_forms[k] << v.new(model, attrs, model_klass, model_builder)
+              model = nested_ar_model(@ar_model, k, attrs)
+              self.nested_forms[k] << v.new(model, attrs, @model_klass, @model_builder, @errors_klass)
             end
           end
         end
