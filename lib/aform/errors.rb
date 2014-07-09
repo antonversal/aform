@@ -14,7 +14,6 @@ module Aform
       if nf = form.nested_forms
         nf.inject({}) do |memo, (k,v)|
           messages = v.map do |e|
-            #binding.pry
             e.model.errors.messages.merge(nested_messages(e))
           end
           memo.merge(k => messages)

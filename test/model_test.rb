@@ -42,6 +42,15 @@ describe Aform::Model do
         skip("not implemented")
       end
     end
+
+    context "when marked for destruction" do
+      let(:fields){ [:name, :count] }
+      let(:validations){ [{method: :validates_presence_of, options: [:name]}] }
+
+      it "is not valid" do
+        subject.new(ar_model, _destroy: true).must_be :valid?
+      end
+    end
   end
 
   context "#save" do
@@ -60,6 +69,14 @@ describe Aform::Model do
       ar_model.stubs(:assign_attributes).returns(true)
       ar_model.expects(:save).returns(true)
       model.save
+    end
+
+    context "when marked for destruction" do
+      let(:model) { subject.new(ar_model, _destroy: true)}
+      it "removes element" do
+        ar_model.expects(:destroy).returns(true)
+        model.save
+      end
     end
   end
 end

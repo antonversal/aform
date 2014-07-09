@@ -2,7 +2,8 @@ require 'active_model'
 class Aform::Model
   include ActiveModel::Model
 
-  def initialize(object, attributes = {})
+  def initialize(object, attributes = {}, destroy_key = :_destroy)
+    @destroy = attributes[destroy_key]
     @attributes = attributes.select{|k,v| params.include? k }
     @object = object
   end
@@ -12,7 +13,15 @@ class Aform::Model
   end
 
   def save
-    @object.assign_attributes(@attributes)
-    @object.save
+    if @destroy
+      @object.destroy
+    else
+      @object.assign_attributes(@attributes)
+      @object.save
+    end
+  end
+
+  def valid?
+    @destroy || super
   end
 end
