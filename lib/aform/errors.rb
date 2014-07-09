@@ -13,8 +13,8 @@ module Aform
     def nested_messages(form)
       if nf = form.nested_forms
         nf.inject({}) do |memo, (k,v)|
-          messages = v.map do |e|
-            e.model.errors.messages.merge(nested_messages(e))
+          messages = v.each_with_index.inject({}) do |m, (e, i)|
+            m.merge(i => e.model.errors.messages.merge(nested_messages(e)))
           end
           memo.merge(k => messages)
         end

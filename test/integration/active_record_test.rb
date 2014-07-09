@@ -89,7 +89,7 @@ describe "ActiveRecord" do
     }
     form = PostForm.new(post, attrs)
     form.wont_be :valid?
-    form.errors.must_equal({author: ["can't be blank"], comments: [{author: ["can't be blank"]},
-                                                                   {message: ["can't be blank"]}]})
+    form.errors.must_equal({author: ["can't be blank"], comments: {0 => {author: ["can't be blank"]},
+                                                                   1 => {message: ["can't be blank"]}}})
   end
 end

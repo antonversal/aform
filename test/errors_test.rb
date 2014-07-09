@@ -21,9 +21,9 @@ describe Aform::Errors do
   subject { Aform::Errors.new(@mock_form) }
 
   it "collects form model errors" do
-    subject.messages.must_equal({name: ["can't be blank"], comments: [
-      {message: ["can't be blank"], authors: [{name:["can't be blank"]}]},
-      {author: ["can't be blank"]}
-    ]})
+    subject.messages.must_equal({name: ["can't be blank"], comments: {
+     0 => {message: ["can't be blank"], authors: {0 => {name:["can't be blank"]}}},
+     1 => {author: ["can't be blank"]}
+    }})
   end
 end
