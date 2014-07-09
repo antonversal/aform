@@ -5,14 +5,14 @@ describe Aform::Errors do
 
   before do
     @mock_form = mock("form")
-    @mock_form.stubs(:model).returns(stub(errors: stub(messages: {name: ["can't be blank"]})))
+    @mock_form.stubs(:form_model).returns(stub(errors: stub(messages: {name: ["can't be blank"]})))
     @mock_form.stubs(:nested_forms).returns({comments: [
-      stub(model: stub(errors: stub(messages: {message: ["can't be blank"]})),
+      stub(form_model: stub(errors: stub(messages: {message: ["can't be blank"]})),
            nested_forms: {
-             authors: [stub(model: stub(errors: stub(messages: {name: ["can't be blank"]})), nested_forms: nil)]
+             authors: [stub(form_model: stub(errors: stub(messages: {name: ["can't be blank"]})), nested_forms: nil)]
            },
       ),
-      stub(model: stub(errors: stub(messages: {author: ["can't be blank"]})),
+      stub(form_model: stub(errors: stub(messages: {author: ["can't be blank"]})),
            nested_forms: nil
       ),
     ]})

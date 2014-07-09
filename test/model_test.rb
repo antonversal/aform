@@ -57,35 +57,35 @@ describe Aform::Model do
     let(:fields){ [:name, :count] }
     let(:validations){ [] }
 
-    let(:model) { subject.new(ar_model, name: "name", count: 2, other_attr: "other")}
+    let(:form_model) { subject.new(ar_model, name: "name", count: 2, other_attr: "other")}
 
     it "calls `ar_model.assign_attributes`" do
       ar_model.expects(:assign_attributes).with(name: "name", count: 2).returns(true)
       ar_model.stubs(:save)
-      model.save
+      form_model.save
     end
 
     it "calls `save.ar_model`" do
       ar_model.stubs(:assign_attributes).returns(true)
       ar_model.expects(:save).returns(true)
-      model.save
+      form_model.save
     end
 
     context "when marked for destruction" do
-      let(:model) { subject.new(ar_model, _destroy: true)}
+      let(:form_model) { subject.new(ar_model, _destroy: true)}
       it "removes element" do
         ar_model.expects(:destroy).returns(true)
-        model.save
+        form_model.save
       end
     end
 
     context "when keys are strings" do
-      let(:model) { subject.new(ar_model, "name" => "name", "count" => 2, "other_attr" => "other")}
+      let(:form_model) { subject.new(ar_model, "name" => "name", "count" => 2, "other_attr" => "other")}
 
       it "calls `ar_model.assign_attributes`" do
         ar_model.expects(:assign_attributes).with("name" => "name", "count" => 2).returns(true)
         ar_model.stubs(:save)
-        model.save
+        form_model.save
       end
     end
   end

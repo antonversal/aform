@@ -4,14 +4,14 @@ module Aform
     class_attribute :validations
     class_attribute :nested_form_klasses
 
-    attr_reader :model, :attributes, :nested_forms
+    attr_reader :form_model, :attributes, :nested_forms
 
     def initialize(ar_model, attributes, model_klass = Aform::Model,
       model_builder = Aform::Builder, errors_klass = Aform::Errors)
       @model_klass, @model_builder, @errors_klass = model_klass, model_builder, errors_klass
       @ar_model, @attributes = ar_model, attributes
       creator = @model_builder.new(@model_klass)
-      @model = creator.build_model_klass(self.params, self.validations).new(@ar_model, @attributes)
+      @form_model = creator.build_model_klass(self.params, self.validations).new(@ar_model, @attributes)
       initialize_nested
     end
 
@@ -23,20 +23,20 @@ module Aform
 
     def valid?
       if @nested_forms
-        main = @model.valid?
+        main = @form_model.valid?
         nested = @nested_forms.values.flatten.map(&:valid?).all? #all? don't invoike method on each element
         main && nested
       else
-        @model.valid?
+        @form_model.valid?
       end
     end
 
     def save
       if self.valid?
         if @nested_forms
-          @model.save && @nested_forms.values.flatten.all?(&:save)
+          @form_model.save && @nested_forms.values.flatten.all?(&:save)
         else
-          @model.save
+          @form_model.save
         end
       end
     end
