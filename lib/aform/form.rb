@@ -4,15 +4,14 @@ module Aform
     class_attribute :validations
     class_attribute :nested_form_klasses
 
-    attr_accessor :model, :attributes, :nested_forms
+    attr_reader :model, :attributes, :nested_forms
 
     def initialize(ar_model, attributes, model_klass = Aform::Model,
       model_builder = Aform::Builder, errors_klass = Aform::Errors)
       @model_klass, @model_builder, @errors_klass = model_klass, model_builder, errors_klass
-      @ar_model = ar_model
+      @ar_model, @attributes = ar_model, attributes
       creator = @model_builder.new(@model_klass)
-      self.model = creator.build_model_klass(self.params, self.validations).new(@ar_model, attributes)
-      self.attributes = attributes
+      @model = creator.build_model_klass(self.params, self.validations).new(@ar_model, @attributes)
       initialize_nested
     end
 
@@ -23,21 +22,21 @@ module Aform
     end
 
     def valid?
-      if self.nested_forms
-        main = self.model.valid?
-        nested = self.nested_forms.values.flatten.map(&:valid?).all? #all? don't invoike method on each element
+      if @nested_forms
+        main = @model.valid?
+        nested = @nested_forms.values.flatten.map(&:valid?).all? #all? don't invoike method on each element
         main && nested
       else
-        self.model.valid?
+        @model.valid?
       end
     end
 
     def save
       if self.valid?
-        if self.nested_forms
-          self.model.save && self.nested_forms.values.flatten.all?(&:save)
+        if @nested_forms
+          @model.save && @nested_forms.values.flatten.all?(&:save)
         else
-          self.model.save
+          @model.save
         end
       end
     end
@@ -84,10 +83,10 @@ module Aform
         nested_form_klasses.each do |k,v|
           if attributes.has_key? k
             attributes[k].each do |attrs|
-              self.nested_forms ||= {}
-              self.nested_forms[k] ||= []
+              @nested_forms ||= {}
+              @nested_forms[k] ||= []
               model = nested_ar_model(@ar_model, k, attrs)
-              self.nested_forms[k] << v.new(model, attrs, @model_klass, @model_builder, @errors_klass)
+              @nested_forms[k] << v.new(model, attrs, @model_klass, @model_builder, @errors_klass)
             end
           end
         end
