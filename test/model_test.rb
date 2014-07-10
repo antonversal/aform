@@ -53,7 +53,7 @@ describe Aform::Model do
     end
   end
 
-  context "#save" do
+  describe "#save" do
     let(:fields){ [:name, :count] }
     let(:validations){ [] }
 
@@ -65,18 +65,10 @@ describe Aform::Model do
       form_model.save
     end
 
-    it "calls `save.ar_model`" do
+    it "calls `ar_model.save`" do
       ar_model.stubs(:assign_attributes).returns(true)
       ar_model.expects(:save).returns(true)
       form_model.save
-    end
-
-    context "when marked for destruction" do
-      let(:form_model) { subject.new(ar_model, _destroy: true)}
-      it "removes element" do
-        ar_model.expects(:destroy).returns(true)
-        form_model.save
-      end
     end
 
     context "when keys are strings" do
@@ -86,6 +78,33 @@ describe Aform::Model do
         ar_model.expects(:assign_attributes).with("name" => "name", "count" => 2).returns(true)
         ar_model.stubs(:save)
         form_model.save
+      end
+    end
+  end
+
+  describe "#nested_save" do
+    let(:fields){ [:name, :count] }
+    let(:validations){ [] }
+    let(:form_model) { subject.new(ar_model, name: "name", count: 2, other_attr: "other")}
+
+    it "calls `ar_model.assign_attributes`" do
+      ar_model.expects(:assign_attributes).with(name: "name", count: 2).returns(true)
+      ar_model.stubs(:persisted?).returns(false)
+      form_model.nested_save
+    end
+
+    it "calls `ar_model.save` if persisted? is true" do
+      ar_model.stubs(:assign_attributes).returns(true)
+      ar_model.stubs(:persisted?).returns(true)
+      ar_model.expects(:save).returns(true)
+      form_model.nested_save
+    end
+
+    context "when marked for destruction" do
+      let(:form_model) { subject.new(ar_model, _destroy: true)}
+      it "removes element" do
+        ar_model.expects(:destroy).returns(true)
+        form_model.nested_save
       end
     end
   end
