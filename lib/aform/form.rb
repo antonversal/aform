@@ -34,7 +34,12 @@ module Aform
     def save
       if self.valid?
         if @nested_forms
-          @form_model.save && @nested_forms.values.flatten.all?(&:save)
+          ActiveRecord::Base.transaction do
+            nested_save = @nested_forms.values.flatten.map{|f| f.form_model.nested_save}
+            model_save = @form_model.save
+            raise(ActiveRecord::Rollback) unless nested_save.all? || model_save
+            nested_save && model_save
+          end
         else
           @form_model.save
         end
@@ -85,7 +90,7 @@ module Aform
             attributes[k].each do |attrs|
               @nested_forms ||= {}
               @nested_forms[k] ||= []
-              model = nested_ar_model(@model, k, attrs)
+              model = nested_ar_model(k, attrs)
               @nested_forms[k] << v.new(model, attrs, @model_klass, @model_builder, @errors_klass)
             end
           end
@@ -93,11 +98,11 @@ module Aform
       end
     end
 
-    def nested_ar_model(ar_model, association, attrs)
+    def nested_ar_model(association, attrs)
       if attrs.has_key? :id
-        ar_model.public_send(association).find(attrs[:id])
+        @model.public_send(association).select{|e| e.id == attrs[:id]}.first
       else
-        ar_model.public_send(association).build
+        @model.public_send(association).build
       end
     end
   end
