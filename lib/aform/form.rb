@@ -7,15 +7,14 @@ module Aform
     attr_reader :form_model, :attributes, :nested_forms, :model
 
     def initialize(model, attributes, model_klass = Aform::Model,
-      model_builder = Aform::Builder, errors_klass = Aform::Errors)
+      model_builder = Aform::Builder, errors_klass = Aform::Errors,
+      transaction_klass = ActiveRecord::Base)
       @model_klass, @model_builder, @errors_klass = model_klass, model_builder, errors_klass
-      @model, @attributes = model, attributes
+      @model, @attributes, @transaction_klass = model, attributes, transaction_klass
       creator = @model_builder.new(@model_klass)
       @form_model = creator.build_model_klass(self.params, self.validations).new(@model, @attributes)
       initialize_nested
     end
-
-    #TODO don't save all models if at leas one is fail
 
     def invalid?
       !valid?
@@ -34,7 +33,7 @@ module Aform
     def save
       if self.valid?
         if @nested_forms
-          ActiveRecord::Base.transaction do
+          @transaction_klass.transaction do
             nested_save = @nested_forms.values.flatten.map{|f| f.form_model.nested_save}
             model_save = @form_model.save
             raise(ActiveRecord::Rollback) unless nested_save.all? || model_save
@@ -53,7 +52,9 @@ module Aform
     class << self
       def param(*args)
         self.params ||= []
-        self.params += args
+        options = args.extract_options!
+        elements = options.present? ? args.map{ |a| {a => options}} : args
+        self.params += elements
       end
 
       def method_missing(meth, *args, &block)
@@ -91,7 +92,7 @@ module Aform
               @nested_forms ||= {}
               @nested_forms[k] ||= []
               model = nested_ar_model(k, attrs)
-              @nested_forms[k] << v.new(model, attrs, @model_klass, @model_builder, @errors_klass)
+              @nested_forms[k] << v.new(model, attrs, @model_klass, @model_builder, @errors_klass, @transaction_klass)
             end
           end
         end
