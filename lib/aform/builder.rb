@@ -15,7 +15,8 @@ class Aform::Builder
       end if validations
 
       params.each do |p|
-        self.send(:define_method, p) { @attributes[p] }
+        field = p[:field]
+        self.send(:define_method, field) { @attributes[field] }
       end if params
     end
   end

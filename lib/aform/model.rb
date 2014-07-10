@@ -4,8 +4,8 @@ class Aform::Model
 
   def initialize(object, attributes = {}, destroy_key = :_destroy)
     @destroy = attributes.delete(destroy_key)
-    @attributes = attributes.select{|k,v| params.include? k.to_sym }
     @object = object
+    @attributes = attributes_for_save(attributes)
   end
 
   def self.model_name
@@ -34,5 +34,24 @@ class Aform::Model
 
   def valid?
     @destroy || super
+  end
+
+  private
+
+  def attributes_for_save(attributes)
+    attrs = attributes.symbolize_keys
+    params.inject({}) do |memo, p|
+      if attrs[p[:field]]
+        attr =
+          if p.has_key?(:options) && p[:options].has_key?(:model_field)
+            {p[:options][:model_field] => attrs[p[:field]]}
+          else
+            {p[:field] => attrs[p[:field]]}
+          end
+        memo.merge(attr)
+      else
+        memo
+      end
+    end
   end
 end

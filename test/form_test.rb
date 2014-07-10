@@ -25,7 +25,7 @@ describe Aform::Form do
     end
 
     it "stores params" do
-      subject.params.must_equal([:name, :count, {size: {model_field: :count}}])
+      subject.params.must_equal([{field: :name}, {field: :count}, {field: :size, options: {model_field: :count}}])
     end
   end
 
@@ -120,7 +120,7 @@ describe Aform::Form do
       end
 
       it "saves params" do
-        subject.comments.params.must_equal([:author, :message])
+        subject.comments.params.must_equal([{field: :author}, {field: :message}])
       end
 
       it "saves validations" do

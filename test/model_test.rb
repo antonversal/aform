@@ -7,7 +7,7 @@ describe Aform::Model do
 
   context "validations" do
     context "by type" do
-      let(:fields){ [:name, :full_name] }
+      let(:fields){ [{field: :name}, {field: :full_name}] }
       let(:validations){ [{method: :validates_presence_of, options: [:name]}] }
 
       it "is not valid" do
@@ -20,7 +20,7 @@ describe Aform::Model do
     end
 
     context "validate" do
-      let(:fields){ [:name, :count] }
+      let(:fields){ [{field: :name}, {field: :count}] }
       let(:validations){ [{method: :validates, options: [:count, {presence: true, inclusion: {in: 1..100}}]}] }
 
       it "is not valid" do
@@ -33,7 +33,7 @@ describe Aform::Model do
     end
 
     context "when block is given" do
-      let(:fields){ [:name, :full_name] }
+      let(:fields){ [{field: :name}, {field: :full_name}] }
       let(:validations) do
         [{method: :validate, block: ->{errors.add(:base, "must be foo")}}]
       end
@@ -44,7 +44,7 @@ describe Aform::Model do
     end
 
     context "when marked for destruction" do
-      let(:fields){ [:name, :count] }
+      let(:fields){ [{field: :name}, {field: :count}] }
       let(:validations){ [{method: :validates_presence_of, options: [:name]}] }
 
       it "is not valid" do
@@ -54,7 +54,7 @@ describe Aform::Model do
   end
 
   describe "#save" do
-    let(:fields){ [:name, :count] }
+    let(:fields){ [{field: :name}, {field: :count}] }
     let(:validations){ [] }
 
     let(:form_model) { subject.new(ar_model, name: "name", count: 2, other_attr: "other")}
@@ -75,7 +75,17 @@ describe Aform::Model do
       let(:form_model) { subject.new(ar_model, "name" => "name", "count" => 2, "other_attr" => "other")}
 
       it "calls `ar_model.assign_attributes`" do
-        ar_model.expects(:assign_attributes).with("name" => "name", "count" => 2).returns(true)
+        ar_model.expects(:assign_attributes).with(name: "name", count: 2).returns(true)
+        ar_model.stubs(:save)
+        form_model.save
+      end
+    end
+
+    context "when fields with model_field option" do
+      let(:fields){ [{field: :name}, {field: :count, options: {model_field: :size}}] }
+
+      it "convert attributes" do
+        ar_model.expects(:assign_attributes).with(name: "name", size: 2).returns(true)
         ar_model.stubs(:save)
         form_model.save
       end
@@ -83,7 +93,7 @@ describe Aform::Model do
   end
 
   describe "#nested_save" do
-    let(:fields){ [:name, :count] }
+    let(:fields){ [{field: :name}, {field: :count}] }
     let(:validations){ [] }
     let(:form_model) { subject.new(ar_model, name: "name", count: 2, other_attr: "other")}
 

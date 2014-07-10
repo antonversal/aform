@@ -53,7 +53,10 @@ module Aform
       def param(*args)
         self.params ||= []
         options = args.extract_options!
-        elements = options.present? ? args.map{ |a| {a => options}} : args
+        elements = args.map do |a|
+          field = {field: a}
+          options.present? ? field.merge({options: options}) : field
+        end
         self.params += elements
       end
 
