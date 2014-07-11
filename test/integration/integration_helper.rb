@@ -20,6 +20,11 @@ ActiveRecord::Base.establish_connection(
 #    t.column :author, :string
 #    t.belongs_to :post
 #  end
+#
+#  create_table :likes do |t|
+#    t.column :author, :string
+#    t.belongs_to :comment
+#  end
 #end
 
 class Post < ActiveRecord::Base
@@ -28,5 +33,11 @@ end
 
 class Comment < ActiveRecord::Base
   belongs_to :post
+  has_many :likes
   validates_presence_of :message
+end
+
+class Like < ActiveRecord::Base
+  belongs_to :comment
+  validates_presence_of :author
 end

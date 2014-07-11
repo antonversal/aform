@@ -4,7 +4,7 @@ module Aform
     class_attribute :validations
     class_attribute :nested_form_klasses
 
-    attr_reader :form_model, :attributes, :nested_forms, :model
+    attr_reader :form_model, :attributes, :nested_forms, :model, :nested_models
 
     def initialize(model, attributes, model_klass = Aform::Model,
       model_builder = Aform::Builder, errors_klass = Aform::Errors,
@@ -31,18 +31,7 @@ module Aform
     end
 
     def save
-      if self.valid?
-        if @nested_forms
-          @transaction_klass.transaction do
-            nested_save = @nested_forms.values.flatten.map{|f| f.form_model.nested_save}
-            model_save = @form_model.save
-            raise(ActiveRecord::Rollback) unless nested_save.all? || model_save
-            nested_save && model_save
-          end
-        else
-          @form_model.save
-        end
-      end
+      self.valid? && FormSaver.new(self, @transaction_klass).save
     end
 
     def errors
@@ -103,10 +92,11 @@ module Aform
     end
 
     def nested_ar_model(association, attrs)
+      klass = association.to_s.classify.constantize
       if attrs.has_key? :id
-        @model.public_send(association).select{|e| e.id == attrs[:id]}.first
+        klass.find(attrs[:id])
       else
-        @model.public_send(association).build
+        klass.new
       end
     end
   end

@@ -7,6 +7,10 @@ class PostForm < Aform::Form
   has_many :comments do
     param :message, :author
     validates_presence_of :message, :author
+    has_many :likes do
+      param :author
+      validates_presence_of :author
+    end
   end
 end
 
@@ -15,6 +19,7 @@ describe "ActiveRecord" do
   after do
     Comment.delete_all
     Post.delete_all
+    Like.delete_all
   end
 
   it "creates records" do
@@ -91,5 +96,21 @@ describe "ActiveRecord" do
     form.wont_be :valid?
     form.errors.must_equal({author: ["can't be blank"], comments: {0 => {author: ["can't be blank"]},
                                                                    1 => {message: ["can't be blank"]}}})
+  end
+
+  it "creates 3rd nested records" do
+    post = Post.new
+    attrs = {title: "Cool Post", author: "John Doe",
+             comments: [
+               {message: "Great post man!",
+                author: "Mr. Smith",
+                likes: [{author: "Vasya"}]},
+             ]
+    }
+    form = PostForm.new(post, attrs)
+    form.save.must_equal true
+    Post.count.must_equal 1
+    Comment.count.must_equal 1
+    Like.count.must_equal 1
   end
 end
