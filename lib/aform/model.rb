@@ -2,10 +2,12 @@ require 'active_model'
 class Aform::Model
   include ActiveModel::Model
 
-  def initialize(object, attributes = {}, destroy_key = :_destroy)
+  def initialize(object, form, attributes = {}, destroy_key = :_destroy)
     @destroy = attributes.delete(destroy_key)
     @object = object
-    @attributes = attributes_for_save(attributes)
+    @form = form
+    sync_with_model
+    @attributes.merge! attributes_for_save(attributes)
   end
 
   def self.model_name
@@ -30,20 +32,32 @@ class Aform::Model
 
   private
 
+  def sync_with_model
+    attrs = @object.attributes.symbolize_keys
+    @attributes = attributes_for_save(attrs)
+  end
+
   def attributes_for_save(attributes)
     attrs = attributes.symbolize_keys
     params.inject({}) do |memo, p|
-      if attrs[p[:field]]
-        attr =
-          if p.has_key?(:options) && p[:options].has_key?(:model_field)
-            {p[:options][:model_field] => attrs[p[:field]]}
-          else
-            {p[:field] => attrs[p[:field]]}
-          end
-        memo.merge(attr)
+      field_name = get_field_name(p)
+      if @form.respond_to?(p[:field])
+        memo.merge(field_name => @form.public_send(p[:field], attrs))
       else
-        memo
+        if attrs[p[:field]]
+          memo.merge(field_name => attrs[p[:field]])
+        else
+          memo
+        end
       end
+    end
+  end
+
+  def get_field_name(p)
+    if p.has_key?(:options) && p[:options].has_key?(:model_field)
+      p[:options][:model_field]
+    else
+      p[:field]
     end
   end
 end
