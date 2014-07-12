@@ -4,15 +4,17 @@ module Aform
     class_attribute :validations
     class_attribute :nested_form_klasses
 
-    attr_reader :form_model, :attributes, :nested_forms, :model, :nested_models
+    attr_reader :form_model, :attributes, :nested_forms, :model, :nested_models, :parent
 
-    def initialize(model, attributes, model_klass = Aform::Model,
+    def initialize(model, attributes, parent = nil ,model_klass = Aform::Model,
       model_builder = Aform::Builder, errors_klass = Aform::Errors,
-      transaction_klass = ActiveRecord::Base)
+      form_saver = Aform::FormSaver, transaction_klass = ActiveRecord::Base)
       @model_klass, @model_builder, @errors_klass = model_klass, model_builder, errors_klass
       @model, @attributes, @transaction_klass = model, attributes, transaction_klass
+      @parent = parent
+      @form_saver = form_saver
       creator = @model_builder.new(@model_klass)
-      @form_model = creator.build_model_klass(self.params, self.validations).new(@model, @attributes)
+      @form_model = creator.build_model_klass(self.params, self.validations).new(@model, self, @attributes)
       initialize_nested
     end
 
@@ -31,7 +33,7 @@ module Aform
     end
 
     def save
-      self.valid? && FormSaver.new(self, @transaction_klass).save
+      self.valid? && @form_saver.new(self, @transaction_klass).save
     end
 
     def errors
@@ -84,7 +86,8 @@ module Aform
               @nested_forms ||= {}
               @nested_forms[k] ||= []
               model = nested_ar_model(k, attrs)
-              @nested_forms[k] << v.new(model, attrs, @model_klass, @model_builder, @errors_klass, @transaction_klass)
+              @nested_forms[k] << v.new(model, attrs, self, @model_klass, @model_builder,
+                                        @errors_klass, @form_saver, @transaction_klass)
             end
           end
         end
