@@ -81,7 +81,7 @@ module Aform
     def initialize_nested
       if nested_form_klasses
         nested_form_klasses.each do |k,v|
-          if attributes.has_key? k
+          if attributes.has_key?(k) && attributes[k]
             attributes[k].each do |attrs|
               @nested_forms ||= {}
               @nested_forms[k] ||= []

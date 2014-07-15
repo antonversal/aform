@@ -116,6 +116,16 @@ describe "saving" do
       Comment.count.must_equal 1
       Like.count.must_equal 1
     end
+
+    context "when nested is nil" do
+      it "saves without nested" do
+        post = Post.new
+        attrs = {title: "Cool Post", author: "John Doe",
+                 comments: nil}
+        form = PostForm.new(post, attrs)
+        form.save.must_equal true
+      end
+    end
   end
 
   context "attributes from method" do
