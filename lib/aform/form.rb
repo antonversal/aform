@@ -1,8 +1,6 @@
 module Aform
   class Form
-    class_attribute :params
-    class_attribute :validations
-    class_attribute :nested_form_klasses
+    class_attribute :params, :pkey, :validations, :nested_form_klasses
 
     attr_reader :form_model, :attributes, :nested_forms, :model, :nested_models, :parent
 
@@ -41,6 +39,10 @@ module Aform
     end
 
     class << self
+      def primary_key(key)
+        self.pkey = key
+      end
+
       def param(*args)
         self.params ||= []
         options = args.extract_options!
@@ -85,7 +87,7 @@ module Aform
             attributes[k].each do |attrs|
               @nested_forms ||= {}
               @nested_forms[k] ||= []
-              model = nested_ar_model(k, attrs)
+              model = nested_ar_model(k, attrs, v.pkey)
               @nested_forms[k] << v.new(model, attrs, self, @model_klass, @model_builder,
                                         @errors_klass, @form_saver, @transaction_klass)
             end
@@ -94,10 +96,11 @@ module Aform
       end
     end
 
-    def nested_ar_model(association, attrs)
+    def nested_ar_model(association, attrs, key = :id)
+      key = key || :id
       klass = association.to_s.classify.constantize
-      if attrs.has_key? :id
-        klass.find(attrs[:id])
+      if attrs.has_key? key
+        klass.find_by!(key => attrs[key])
       else
         klass.new
       end
