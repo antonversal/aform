@@ -17,10 +17,10 @@ class Aform::Model
   # AR saves children with parent if it's new object
   # but dont save children with parent when children is updated
   def save(association = nil)
+    @object.assign_attributes(@attributes)
     if @destroy
       @object.destroy
     else
-      @object.assign_attributes(@attributes)
       association << @object if association
       @object.save
     end
