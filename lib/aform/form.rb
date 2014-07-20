@@ -99,11 +99,7 @@ module Aform
     def nested_ar_model(association, attrs, key = :id)
       key = key || :id
       klass = association.to_s.classify.constantize
-      if attrs.has_key? key
-        klass.find_by!(key => attrs[key])
-      else
-        klass.new
-      end
+      klass.find_by(key => attrs[key]) || klass.new
     end
   end
 end
