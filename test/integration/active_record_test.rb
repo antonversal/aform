@@ -150,4 +150,33 @@ describe "saving" do
       post.author.must_equal("John Doe and Mr. Author")
     end
   end
+
+  context "validate uniqueness" do
+    class Other2PostForm < Aform::Form
+      param :title
+      validates :title, uniqueness: true
+
+      has_many :comments do
+        param :message, :author
+        validates :message, uniqueness: true
+      end
+    end
+
+    before do
+      Post.create!(title: "test")
+      Comment.create!(message: "test")
+    end
+
+    after do
+      Post.delete_all
+    end
+
+    it "inherits attribute from parent" do
+      post = Post.new
+      attrs = {title: "test", comments: [{message: "test"}]}
+      form = Other2PostForm.new(post, attrs)
+      form.save.must_equal false
+      form.errors.must_equal({:title=>["has already been taken"]})
+    end
+  end
 end
