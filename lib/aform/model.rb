@@ -14,6 +14,10 @@ class Aform::Model
     ActiveModel::Name.new(self, nil, "Aform::Model")
   end
 
+  def self.validates_uniqueness_of(*attr_names)
+    validates_with UniquenessValidator, _merge_attributes(attr_names)
+  end
+
   # AR saves children with parent if it's new object
   # but dont save children with parent when children is updated
   def save(association = nil)

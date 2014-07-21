@@ -158,7 +158,7 @@ describe "saving" do
 
       has_many :comments do
         param :message, :author
-        validates :message, uniqueness: true
+        validates_uniqueness_of :message
       end
     end
 
@@ -169,6 +169,7 @@ describe "saving" do
 
     after do
       Post.delete_all
+      Comment.delete_all
     end
 
     it "inherits attribute from parent" do
@@ -176,7 +177,8 @@ describe "saving" do
       attrs = {title: "test", comments: [{message: "test"}]}
       form = Other2PostForm.new(post, attrs)
       form.save.must_equal false
-      form.errors.must_equal({:title=>["has already been taken"]})
+      form.errors.must_equal({:title=>["has already been taken"],
+                              :comments=>{0=>{:message=>["has already been taken"]}}})
     end
   end
 end
