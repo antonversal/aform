@@ -4,30 +4,29 @@ module Aform
 
     attr_reader :form_model, :attributes, :nested_forms, :model, :nested_models, :parent
 
-    def initialize(model, attributes, parent = nil, model_klass = Aform::Model,
-      model_builder = Aform::Builder, errors_klass = Aform::Errors,
-      form_saver = Aform::FormSaver)
-      @model_klass, @model_builder, @errors_klass = model_klass, model_builder, errors_klass
-      @model, @attributes = model, attributes
+    def initialize(model, attributes, parent = nil, opts = {})
+      @opts = opts
+      @attributes = attributes
+      @model = model
       @parent = parent
-      @form_saver = form_saver
-      creator = @model_builder.new(@model_klass)
-      @form_model = creator.build_model_klass(self.params, self.validations).new(@model, self, @attributes)
+      assign_opts_classes(opts)
+      initialize_model
       initialize_nested
-    end
-
-    def invalid?
-      !valid?
     end
 
     def valid?
       if @nested_forms
         main = @form_model.valid?
-        nested = @nested_forms.values.flatten.map(&:valid?).all? #all? don't invoike method on each element
+        #all? don't invoike method on each element
+        nested = @nested_forms.values.flatten.map(&:valid?).all?
         main && nested
       else
         @form_model.valid?
       end
+    end
+
+    def invalid?
+      !valid?
     end
 
     def save
@@ -80,6 +79,19 @@ module Aform
 
     private
 
+    def assign_opts_classes(opts)
+      @model_klass = opts[:model_klass] ||= Aform::Model
+      @model_builder = opts[:model_builder] ||= Aform::Builder
+      @errors_klass = opts[:errors_klass] ||= Aform::Errors
+      @form_saver = opts[:form_saver] ||= Aform::FormSaver
+    end
+
+    def initialize_model
+      creator = @model_builder.new(@model_klass)
+      model_klass = creator.build_model_klass(self.params, self.validations)
+      @form_model = model_klass.new(@model, self, @attributes)
+    end
+
     def initialize_nested
       if nested_form_klasses
         nested_form_klasses.each do |k,v|
@@ -88,15 +100,14 @@ module Aform
               @nested_forms ||= {}
               @nested_forms[k] ||= []
               model = nested_ar_model(k, attrs, v.pkey)
-              @nested_forms[k] << v.new(model, attrs, self, @model_klass, @model_builder,
-                                        @errors_klass, @form_saver)
+              @nested_forms[k] << v.new(model, attrs, self, @opts)
             end
           end
         end
       end
     end
 
-    def nested_ar_model(association, attrs, key = :id)
+    def nested_ar_model(association, attrs, key)
       key = key || :id
       klass = association.to_s.classify.constantize
       klass.find_by(key => attrs[key]) || klass.new
