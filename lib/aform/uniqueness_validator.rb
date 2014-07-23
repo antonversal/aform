@@ -1,4 +1,5 @@
 require 'active_record'
+# tested within integration test
 class UniquenessValidator < ::ActiveRecord::Validations::UniquenessValidator
   def validate_each(form, attribute, value)
     object = form.instance_variable_get(:@object)

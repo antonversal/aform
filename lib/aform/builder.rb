@@ -1,4 +1,5 @@
 require 'active_model'
+#tested within model test
 class Aform::Builder
   def initialize(model_klass)
     @model_klass = model_klass
