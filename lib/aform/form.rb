@@ -4,11 +4,11 @@ module Aform
 
     attr_reader :form_model, :attributes, :nested_forms, :model, :nested_models, :parent
 
-    def initialize(model, attributes, parent = nil ,model_klass = Aform::Model,
+    def initialize(model, attributes, parent = nil, model_klass = Aform::Model,
       model_builder = Aform::Builder, errors_klass = Aform::Errors,
-      form_saver = Aform::FormSaver, transaction_klass = ActiveRecord::Base)
+      form_saver = Aform::FormSaver)
       @model_klass, @model_builder, @errors_klass = model_klass, model_builder, errors_klass
-      @model, @attributes, @transaction_klass = model, attributes, transaction_klass
+      @model, @attributes = model, attributes
       @parent = parent
       @form_saver = form_saver
       creator = @model_builder.new(@model_klass)
@@ -31,7 +31,7 @@ module Aform
     end
 
     def save
-      self.valid? && @form_saver.new(self, @transaction_klass).save
+      self.valid? && @form_saver.new(self).save
     end
 
     def errors
@@ -89,7 +89,7 @@ module Aform
               @nested_forms[k] ||= []
               model = nested_ar_model(k, attrs, v.pkey)
               @nested_forms[k] << v.new(model, attrs, self, @model_klass, @model_builder,
-                                        @errors_klass, @form_saver, @transaction_klass)
+                                        @errors_klass, @form_saver)
             end
           end
         end
