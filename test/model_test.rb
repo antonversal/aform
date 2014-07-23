@@ -3,7 +3,17 @@ require 'test_helper'
 describe Aform::Model do
   subject { Aform::Builder.new(Aform::Model).build_model_klass(fields, validations) }
 
-  let(:ar_model) { mock("ar_model") }
+  def mock_ar_model(attributes: {}, save: true)
+    model = OpenStruct.new(attributes: attributes, save: save)
+    model.define_singleton_method :assign_attributes do |attrs|
+      @table[:attributes] = attrs
+    end
+    model
+  end
+
+  def mock_form
+    OpenStruct.new
+  end
 
   context "validations" do
     context "by type" do
@@ -11,11 +21,11 @@ describe Aform::Model do
       let(:validations){ [{method: :validates_presence_of, options: [:name]}] }
 
       it "is not valid" do
-        subject.new(ar_model).wont_be :valid?
+        subject.new(mock_ar_model, mock_form).wont_be :valid?
       end
 
       it "is valid" do
-        subject.new(ar_model, name: "the name").must_be :valid?
+        subject.new(mock_ar_model, mock_form, {name: "the name"}).must_be :valid?
       end
     end
 
@@ -24,11 +34,11 @@ describe Aform::Model do
       let(:validations){ [{method: :validates, options: [:count, {presence: true, inclusion: {in: 1..100}}]}] }
 
       it "is not valid" do
-        subject.new(ar_model, count: -1).wont_be :valid?
+        subject.new(mock_ar_model, mock_form, count: -1).wont_be :valid?
       end
 
       it "is valid" do
-        subject.new(ar_model, name: "the name", count: 3).must_be :valid?
+        subject.new(mock_ar_model, mock_form, name: "the name", count: 3).must_be :valid?
       end
     end
 
@@ -42,42 +52,33 @@ describe Aform::Model do
         skip("not implemented")
       end
     end
-
-    context "when marked for destruction" do
-      let(:fields){ [{field: :name}, {field: :count}] }
-      let(:validations){ [{method: :validates_presence_of, options: [:name]}] }
-
-      it "is not valid" do
-        subject.new(ar_model, _destroy: true).must_be :valid?
-      end
-    end
   end
 
   describe "#save" do
     let(:fields){ [{field: :name}, {field: :count}] }
     let(:validations){ [] }
+    let(:model) { mock_ar_model }
+    let(:form_model) { subject.new(model, mock_form, name: "name", count: 2, other_attr: "other")}
 
-    let(:form_model) { subject.new(ar_model, name: "name", count: 2, other_attr: "other")}
-
-    it "calls `ar_model.assign_attributes`" do
-      ar_model.expects(:assign_attributes).with(name: "name", count: 2).returns(true)
-      ar_model.stubs(:save)
+    it "assigns attributes to model" do
       form_model.save
+      model.attributes.must_equal({name: "name", count: 2})
     end
 
-    it "calls `ar_model.save`" do
-      ar_model.stubs(:assign_attributes).returns(true)
-      ar_model.expects(:save).returns(true)
+    it "saves model" do
+      model.expects(:save)
       form_model.save
     end
 
     context "when keys are strings" do
-      let(:form_model) { subject.new(ar_model, "name" => "name", "count" => 2, "other_attr" => "other")}
+      let(:form_model) { subject.new(model, mock_form,
+                                     "name" => "name",
+                                     "count" => 2,
+                                     "other_attr" => "other")}
 
-      it "calls `ar_model.assign_attributes`" do
-        ar_model.expects(:assign_attributes).with(name: "name", count: 2).returns(true)
-        ar_model.stubs(:save)
+      it "calls assigns attributes" do
         form_model.save
+        model.attributes.must_equal(name: "name", count: 2)
       end
     end
 
@@ -85,42 +86,36 @@ describe Aform::Model do
       let(:fields){ [{field: :name}, {field: :count, options: {model_field: :size}}] }
 
       it "convert attributes" do
-        ar_model.expects(:assign_attributes).with(name: "name", size: 2).returns(true)
-        ar_model.stubs(:save)
         form_model.save
+        model.attributes.must_equal(name: "name", size: 2)
+      end
+    end
+
+    context "when association is given" do
+      let(:association) {[]}
+      before do
+        form_model.save(association)
+      end
+
+      it "adds object to association" do
+        association.must_equal([model])
       end
     end
   end
 
-  describe "#nested_save" do
+  context "when object for destroying" do
     let(:fields){ [{field: :name}, {field: :count}] }
-    let(:validations){ [] }
-    let(:form_model) { subject.new(ar_model, name: "name", count: 2, other_attr: "other")}
+    let(:validations){ [{method: :validates_presence_of, options: [:name]}] }
+    let(:model) { mock_ar_model }
+    let(:form_model) { subject.new(model, mock_form, count: 2, _destroy: true)}
 
-    it "calls `ar_model.assign_attributes`" do
-      ar_model.expects(:assign_attributes).with(name: "name", count: 2).returns(true)
-      ar_model.stubs(:persisted?).returns(false)
-      form_model.nested_save
+    it "is valid" do
+      form_model.must_be :valid?
     end
 
-    it "calls `ar_model.save` if persisted? is true" do
-      ar_model.stubs(:assign_attributes).returns(true)
-      ar_model.stubs(:persisted?).returns(true)
-      ar_model.expects(:save).returns(true)
-      form_model.nested_save
-    end
-
-    context "when marked for destruction" do
-      let(:form_model) { subject.new(ar_model, name: "name", count: 2, _destroy: true)}
-      it "removes element" do
-        ar_model.expects(:destroy).returns(true)
-        form_model.nested_save
-      end
-
-      it "calls `ar_model.assign_attributes`" do
-        ar_model.expects(:assign_attributes).with(name: "name", count: 2).returns(true)
-        form_model.nested_save
-      end
+    it "assigns attributes" do
+      form_model.save
+      model.attributes.must_equal(count: 2)
     end
   end
 end
