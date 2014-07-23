@@ -1,11 +1,15 @@
 module Aform
   class FormSaver
-    def initialize(form, transaction_klass = ActiveRecord::Base)
+    attr_reader :transaction_klass, :rollback_klass
+
+    def initialize(form, opts = {})
+      @transaction_klass = opts[:transaction_klass] ||= ActiveRecord::Base
+      @rollback_klass = opts[:rollback_klass] ||= ActiveRecord::Rollback
       @form = form
-      @transaction_klass = transaction_klass
     end
 
     def save
+      result = false
       @transaction_klass.transaction do
         result =
           if @form.nested_forms
@@ -13,9 +17,9 @@ module Aform
           else
             @form.form_model.save
           end
-        raise(ActiveRecord::Rollback) unless result
-        result
+        raise(@rollback_klass) unless result
       end
+      result
     end
 
     protected
@@ -27,7 +31,7 @@ module Aform
           save_nested(nf) if nf.nested_forms
           result
         end
-      end
+      end.flatten
     end
   end
 end
