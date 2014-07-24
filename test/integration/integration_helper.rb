@@ -7,26 +7,6 @@ ActiveRecord::Base.establish_connection(
   :database => "#{Dir.pwd}/database.sqlite3"
 )
 
-#TODO: create task
-#ActiveRecord::Schema.define do
-#  create_table :posts do |t|
-#    t.column :title, :string
-#    t.column :author, :string
-#    t.timestamps
-#  end
-#
-#  create_table :comments do |t|
-#    t.column :message, :string
-#    t.column :author, :string
-#    t.belongs_to :post
-#  end
-#
-#  create_table :likes do |t|
-#    t.column :author, :string
-#    t.belongs_to :comment
-#  end
-#end
-
 class Post < ActiveRecord::Base
   has_many :comments
 end
