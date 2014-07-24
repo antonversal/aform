@@ -84,26 +84,13 @@ module Aform
       @form_model = @opts[:form_model] || Aform::Model.\
         build_klass(self.params, self.validations).\
         new(record, self, attributes)
+      @nested_forms_initializer =
+        @opts[:nested_forms_initializer] || NestedFormsInitializer.\
+        new(nested_form_klasses, @attributes, @record)
     end
 
     def initialize_nested
-      if nested_form_klasses
-        nested_form_klasses.each do |k,v|
-          if attributes.has_key?(k) && attributes[k]
-            attributes[k].each do |attrs|
-              @nested_forms ||= {}
-              @nested_forms[k] ||= []
-              model = nested_record(k, attrs, v.pkey)
-              @nested_forms[k] << v.new(model, attrs, self, @opts)
-            end
-          end
-        end
-      end
-    end
-
-    def nested_record(association, attrs, key)
-      key = key || :id
-      record.send(association).find_by(key => attrs[key]) || association.to_s.classify.constantize.new
+      @nested_forms = @nested_forms_initializer.init if nested_form_klasses
     end
   end
 end
