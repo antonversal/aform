@@ -2,12 +2,12 @@ module Aform
   class Form
     class_attribute :params, :pkey, :validations, :nested_form_klasses
 
-    attr_reader :form_model, :attributes, :nested_forms, :record, :parent
+    attr_reader :form_model, :attributes, :nested_forms, :model, :parent
 
-    def initialize(record, attributes, parent = nil, opts = {})
+    def initialize(model, attributes, parent = nil, opts = {})
       @opts = opts
       @attributes = attributes
-      @record = record
+      @model = model
       @parent = parent
       assign_opts_instances
       initialize_nested
@@ -83,7 +83,7 @@ module Aform
       @form_saver = @opts[:form_saver] || Aform::FormSaver.new(self)
       @form_model = @opts[:form_model] || Aform::Model.\
         build_klass(self.params, self.validations).\
-        new(record, self, attributes)
+        new(model, self, attributes)
     end
 
     def initialize_nested
@@ -92,7 +92,7 @@ module Aform
           nested_form_klasses.inject({}) do |memo, (k, v)|
             if attributes[k]
               nested = attributes[k].map do |attrs|
-                v.new(nested_record(k, attrs, v.pkey), attrs, self, @opts)
+                v.new(nested_model(k, attrs, v.pkey), attrs, self, @opts)
               end
               memo.merge(k => nested)
             else
@@ -102,9 +102,9 @@ module Aform
         end
     end
 
-    def nested_record(association, attrs, key)
+    def nested_model(association, attrs, key)
       key = key || :id
-      record.send(association).find_by(key => attrs[key]) || \
+      model.send(association).find_by(key => attrs[key]) || \
         association.to_s.classify.constantize.new
     end
   end

@@ -27,7 +27,7 @@ module Aform
     def save_nested(form)
       form.nested_forms.map do |k, v|
         v.map do |nf|
-          result = nf.form_model.save(form.record.send(k))
+          result = nf.form_model.save(form.model.send(k))
           save_nested(nf) if nf.nested_forms
           result
         end
