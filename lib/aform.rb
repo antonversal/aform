@@ -10,7 +10,3 @@ require 'aform/builder'
 require 'aform/errors'
 require 'aform/form_saver'
 require 'aform/uniqueness_validator'
-
-module Aform
-  # Your code goes here...
-end

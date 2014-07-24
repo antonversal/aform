@@ -2,15 +2,14 @@ module Aform
   class Form
     class_attribute :params, :pkey, :validations, :nested_form_klasses
 
-    attr_reader :form_model, :attributes, :nested_forms, :model, :nested_models, :parent
+    attr_reader :form_model, :attributes, :nested_forms, :model, :parent
 
     def initialize(model, attributes, parent = nil, opts = {})
       @opts = opts
       @attributes = attributes
       @model = model
       @parent = parent
-      assign_opts_classes(opts)
-      initialize_model
+      assign_opts_instances
       initialize_nested
     end
 
@@ -30,11 +29,11 @@ module Aform
     end
 
     def save
-      self.valid? && @form_saver.new(self).save
+      self.valid? && @form_saver.save
     end
 
     def errors
-      @errors_klass.new(self).messages
+      @errors.messages
     end
 
     class << self
@@ -79,17 +78,11 @@ module Aform
 
     private
 
-    def assign_opts_classes(opts)
-      @model_klass = opts[:model_klass] ||= Aform::Model
-      @model_builder = opts[:model_builder] ||= Aform::Builder
-      @errors_klass = opts[:errors_klass] ||= Aform::Errors
-      @form_saver = opts[:form_saver] ||= Aform::FormSaver
-    end
-
-    def initialize_model
-      creator = @model_builder.new(@model_klass)
-      model_klass = creator.build_model_klass(self.params, self.validations)
-      @form_model = model_klass.new(@model, self, @attributes)
+    def assign_opts_instances
+      @errors = @opts[:errors] || Aform::Errors.new(self)
+      @form_saver = @opts[:form_saver] || Aform::FormSaver.new(self)
+      @form_model = @opts[:form_model] || Aform::Model.build_klass(self.params, self.validations).\
+        new(model, self, attributes)
     end
 
     def initialize_nested
