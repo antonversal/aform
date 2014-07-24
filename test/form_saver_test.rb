@@ -21,10 +21,10 @@ describe Aform::FormSaver do
                    form_model: form_model)
   end
 
-  def mock_form(nested_forms: nil, model: nil, save: true)
+  def mock_form(nested_forms: nil, record: nil, save: true)
     OpenStruct.new(nested_forms: nested_forms,
                    form_model: OpenStruct.new(save: save),
-                   model: model)
+                   record: record)
   end
 
   def form_saver(form)
@@ -49,14 +49,14 @@ describe Aform::FormSaver do
       it "success" do
         nested_forms = [mock_nested_form, mock_nested_form]
         form = mock_form(nested_forms: {comments: nested_forms},
-                         model: OpenStruct.new(comments: []))
+                         record: OpenStruct.new(comments: []))
         form_saver(form).save.must_equal(true)
       end
 
       it "failure" do
         nested_forms = [mock_nested_form(false), mock_nested_form]
         form = mock_form(nested_forms: {comments: nested_forms},
-                         model: OpenStruct.new(comments: []))
+                         record: OpenStruct.new(comments: []))
         form_saver(form).save.must_equal(false)
       end
     end
