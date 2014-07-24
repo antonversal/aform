@@ -12,7 +12,11 @@ class Aform::Builder
       self.params = params
 
       validations.each do |v|
-        send(v[:method], *v[:options])
+        if v[:block]
+          send(v[:method], v[:block])
+        else
+          send(v[:method], *v[:options])
+        end
       end if validations
 
       params.each do |p|

@@ -1,4 +1,7 @@
 # Aform
+[![Build Status](https://travis-ci.org/antonversal/aform.svg?branch=master)](https://travis-ci.org/antonversal/aform)
+
+[![Code Quality](https://codeclimate.com/github/antonversal/aform.png)](https://codeclimate.com/github/antonversal/aform)
 
 TODO: Write a gem description
 

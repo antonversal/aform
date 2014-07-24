@@ -48,8 +48,15 @@ describe Aform::Model do
         [{method: :validate, block: ->{errors.add(:base, "must be foo")}}]
       end
 
+      let(:model) {subject.new(mock_ar_model, mock_form, {})}
+
       it "is not valid" do
-        skip("not implemented")
+        model.wont_be :valid?
+      end
+
+      it "adds errors" do
+        model.valid?
+        model.errors.messages.must_equal(base: ["must be foo"])
       end
     end
   end
