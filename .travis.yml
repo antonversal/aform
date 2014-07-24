@@ -1,0 +1,9 @@
+language: ruby
+rvm:
+  - "2.0.0-p481"
+  - "2.1.2"
+before_script:
+  - bundle exec rake test:prepare
+script:
+  - bundle exec rake test
+  - bundle exec rake test:integration
