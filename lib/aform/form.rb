@@ -79,18 +79,33 @@ module Aform
     private
 
     def assign_opts_instances
-      @errors = @opts[:errors] || Aform::Errors.new(self)
+      @errors     = @opts[:errors] || Aform::Errors.new(self)
       @form_saver = @opts[:form_saver] || Aform::FormSaver.new(self)
       @form_model = @opts[:form_model] || Aform::Model.\
         build_klass(self.params, self.validations).\
         new(record, self, attributes)
-      @nested_forms_initializer =
-        @opts[:nested_forms_initializer] || NestedFormsInitializer.\
-        new(nested_form_klasses, @attributes, @record)
     end
 
     def initialize_nested
-      @nested_forms = @nested_forms_initializer.init if nested_form_klasses
+      @nested_forms =
+        if nested_form_klasses
+          nested_form_klasses.inject({}) do |memo, (k, v)|
+            if attributes[k]
+              nested = attributes[k].map do |attrs|
+                v.new(nested_record(k, attrs, v.pkey), attrs, self, @opts)
+              end
+              memo.merge(k => nested)
+            else
+              memo
+            end
+          end
+        end
+    end
+
+    def nested_record(association, attrs, key)
+      key = key || :id
+      record.send(association).find_by(key => attrs[key]) || \
+        association.to_s.classify.constantize.new
     end
   end
 end
