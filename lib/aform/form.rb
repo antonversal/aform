@@ -2,12 +2,12 @@ module Aform
   class Form
     class_attribute :params, :pkey, :validations, :nested_form_klasses
 
-    attr_reader :form_model, :attributes, :nested_forms, :model, :parent
+    attr_reader :form_model, :attributes, :nested_forms, :record, :parent
 
-    def initialize(model, attributes, parent = nil, opts = {})
+    def initialize(record, attributes, parent = nil, opts = {})
       @opts = opts
       @attributes = attributes
-      @model = model
+      @record = record
       @parent = parent
       assign_opts_instances
       initialize_nested
@@ -81,8 +81,9 @@ module Aform
     def assign_opts_instances
       @errors = @opts[:errors] || Aform::Errors.new(self)
       @form_saver = @opts[:form_saver] || Aform::FormSaver.new(self)
-      @form_model = @opts[:form_model] || Aform::Model.build_klass(self.params, self.validations).\
-        new(model, self, attributes)
+      @form_model = @opts[:form_model] || Aform::Model.\
+        build_klass(self.params, self.validations).\
+        new(record, self, attributes)
     end
 
     def initialize_nested
@@ -92,7 +93,7 @@ module Aform
             attributes[k].each do |attrs|
               @nested_forms ||= {}
               @nested_forms[k] ||= []
-              model = nested_ar_model(k, attrs, v.pkey)
+              model = nested_record(k, attrs, v.pkey)
               @nested_forms[k] << v.new(model, attrs, self, @opts)
             end
           end
@@ -100,10 +101,9 @@ module Aform
       end
     end
 
-    def nested_ar_model(association, attrs, key)
+    def nested_record(association, attrs, key)
       key = key || :id
-      klass = association.to_s.classify.constantize
-      klass.find_by(key => attrs[key]) || klass.new
+      record.send(association).find_by(key => attrs[key]) || association.to_s.classify.constantize.new
     end
   end
 end
