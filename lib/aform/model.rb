@@ -10,6 +10,10 @@ class Aform::Model
     @attributes.merge! attributes_for_save(attributes)
   end
 
+  def self.build_klass(params, validations, builder = Aform::Builder.new(Aform::Model))
+    builder.build_model_klass(params, validations)
+  end
+
   def self.model_name
     ActiveModel::Name.new(self, nil, "Aform::Model")
   end

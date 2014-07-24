@@ -1,7 +1,7 @@
 require 'test_helper'
 
 describe Aform::Model do
-  subject { Aform::Builder.new(Aform::Model).build_model_klass(fields, validations) }
+  subject { Aform::Model.build_klass(fields, validations) }
 
   def mock_ar_model(attributes: {}, save: true)
     model = OpenStruct.new(attributes: attributes, save: save)
