@@ -80,7 +80,7 @@ post = {
 
 ### Params
 Before looking up the param in a given hash, a form object will check for the presence of a method with the name of the param:
-```
+```ruby
 post = {
   title: "Cool Post", 
   first_author: "John Doe", 
