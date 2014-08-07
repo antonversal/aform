@@ -52,7 +52,7 @@ class Aform::Model
       if @form.respond_to?(p[:field])
         memo.merge(field_name => @form.public_send(p[:field], attrs))
       else
-        if attrs[p[:field]]
+        if !attrs[p[:field]].nil?
           memo.merge(field_name => attrs[p[:field]])
         else
           memo

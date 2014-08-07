@@ -89,6 +89,15 @@ describe Aform::Model do
       end
     end
 
+    context "when field with boolean false value" do
+      let(:form_model) { subject.new(model, mock_form, name: "name", count: false)}
+
+      it "calls assigns attributes" do
+        form_model.save
+        model.attributes.must_equal(name: "name", count: false)
+      end
+    end
+
     context "when fields with model_field option" do
       let(:fields){ [{field: :name}, {field: :count, options: {model_field: :size}}] }
 
