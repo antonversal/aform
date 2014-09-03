@@ -117,6 +117,15 @@ describe Aform::Model do
         association.must_equal([model])
       end
     end
+
+    context "when value of a param is null" do
+      let(:form_model) { subject.new(model, mock_form, name: nil, count: 2, other_attr: "other")}
+      let(:model) { mock_ar_model(attributes: {name: "123"}) }
+      it "saves nil" do
+        form_model.save
+        model.attributes.must_equal(name: nil, count: 2)
+      end
+    end
   end
 
   context "when object for destroying" do
