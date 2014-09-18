@@ -91,14 +91,16 @@ describe "saving" do
       post = Post.new
       attrs = {title: "Cool Post",
                comments: [
-                 {message: "Great post man!"},
-                 {author: "Vasya"}
+                 {message: "Great post man!",
+                  likes: [{author: "Creator"}]},
+                 {author: "Neo",
+                  likes: [{author: "Morpheus"}, {author: nil}]}
                ]
       }
       form = PostForm.new(post, attrs)
       form.wont_be :valid?
       form.errors.must_equal({author: ["can't be blank"], comments: {0 => {author: ["can't be blank"]},
-                                                                     1 => {message: ["can't be blank"]}}})
+                                                                     1 => {message: ["can't be blank"], likes: {1 => { author: ["can't be blank"] }} }}})
     end
 
     it "creates 3rd nested records" do

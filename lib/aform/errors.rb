@@ -17,7 +17,7 @@ module Aform
             errors = e.form_model.errors.messages.merge(nested_messages(e))
             errors.present? ? m.merge(i => errors) : m
           end
-          memo.merge(k => messages)
+          messages.present? ? memo.merge(k => messages) : memo
         end
       else
         {}
